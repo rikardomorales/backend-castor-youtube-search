@@ -28,6 +28,7 @@ public class AuthService {
         }
 
         User user = new User();
+        user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
@@ -41,13 +42,19 @@ public class AuthService {
     }
 
     public String login(AuthRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Credenciales inválidas."));
-
+        User user = null;
+        if (request.getEmail() != null && !request.getEmail().isEmpty()) {
+            user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        }
+        if (user == null && request.getUsername() != null && !request.getUsername().isEmpty()) {
+            user = userRepository.findByUsername(request.getUsername()).orElse(null);
+        }
+        if (user == null) {
+            throw new IllegalArgumentException("Credenciales inválidas.");
+        }
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Credenciales inválidas.");
         }
-
         return jwtUtil.generateToken(user.getEmail());
     }
 }
