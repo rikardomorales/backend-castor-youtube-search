@@ -39,8 +39,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         String requestPath = request.getServletPath();
         
-        // Permitir acceso público a endpoints de autenticación y YouTube
-        if (requestPath.startsWith("/api/auth/") || requestPath.startsWith("/api/youtube/")) {
+        // Permitir acceso público solo a endpoints de autenticación
+        if (requestPath.startsWith("/api/auth/")) {
             chain.doFilter(request, response);
             return;
         }
@@ -79,8 +79,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         }
                     }
                 } catch (Exception e) {
-                    // Log the exception but don't block the request for public endpoints
-                    System.err.println("JWT validation error: " + e.getMessage());
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("Token inválido o expirado.");
+                    return;
                 }
             }
             chain.doFilter(request, response);

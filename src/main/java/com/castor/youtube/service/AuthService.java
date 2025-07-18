@@ -55,6 +55,7 @@ public class AuthService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Credenciales inválidas.");
         }
-        return jwtUtil.generateToken(user.getEmail());
+
+        return jwtUtil.generateToken(user.getUsername());
     }
 }
