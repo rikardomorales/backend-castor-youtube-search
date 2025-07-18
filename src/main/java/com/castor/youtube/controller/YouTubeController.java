@@ -15,6 +15,7 @@ import com.castor.youtube.entity.SearchHistory;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import com.castor.youtube.dto.SearchHistoryDto;
+import com.castor.youtube.dto.PublicUserDto;
 
 @RestController
 @RequestMapping("/api/youtube")
@@ -84,12 +85,18 @@ public class YouTubeController {
             User user = userRepository.findByUsername(username).orElseThrow();
             java.util.List<SearchHistory> history = searchHistoryRepository.findByUser(user);
             java.util.List<SearchHistoryDto> dtoList = history.stream().map(h -> {
-                SearchHistoryDto dto = new SearchHistoryDto();
-                dto.setId(h.getId());
-                dto.setQuery(h.getQuery());
-                dto.setVideoId(h.getVideoId());
-                dto.setSearchedAt(h.getSearchedAt());
-                return dto;
+                PublicUserDto userDto = new PublicUserDto(
+                    h.getUser().getId(),
+                    h.getUser().getUsername(),
+                    h.getUser().getEmail()
+                );
+                return new SearchHistoryDto(
+                    h.getId(),
+                    userDto,
+                    h.getQuery(),
+                    h.getVideoId(),
+                    h.getSearchedAt()
+                );
             }).toList();
             return ResponseEntity.ok(dtoList);
         } catch (Exception e) {
