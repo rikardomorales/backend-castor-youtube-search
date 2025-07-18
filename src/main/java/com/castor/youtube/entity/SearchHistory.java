@@ -1,9 +1,13 @@
 package com.castor.youtube.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
+@Data
+@NoArgsConstructor
 public class SearchHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,21 +24,5 @@ public class SearchHistory {
     private String videoId;
 
     @Column(nullable = false)
-    private LocalDateTime searchedAt;
-
-    public SearchHistory() {
-        this.searchedAt = LocalDateTime.now();
-    }
-
-    // Getters y Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
-    public String getQuery() { return query; }
-    public void setQuery(String query) { this.query = query; }
-    public String getVideoId() { return videoId; }
-    public void setVideoId(String videoId) { this.videoId = videoId; }
-    public LocalDateTime getSearchedAt() { return searchedAt; }
-    public void setSearchedAt(LocalDateTime searchedAt) { this.searchedAt = searchedAt; }
+    private LocalDateTime searchedAt = LocalDateTime.now();
 } 
