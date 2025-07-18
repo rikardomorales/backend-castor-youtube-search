@@ -6,6 +6,7 @@ public class AuthRequest {
     private String username;
     private String email;
     private String password;
+
     private Set<String> roles; // Nuevo campo para roles
 
     // Getters y setters

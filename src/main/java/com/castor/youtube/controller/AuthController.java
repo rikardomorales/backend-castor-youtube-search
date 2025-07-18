@@ -1,5 +1,6 @@
 package com.castor.youtube.controller;
 
+import com.castor.youtube.dto.AuthResponse;
 import com.castor.youtube.service.AuthRequest;
 import com.castor.youtube.service.AuthService;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +23,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody AuthRequest request) {
+    public AuthResponse login(@RequestBody AuthRequest request) {
         String token = authService.login(request);
-        return ResponseEntity.ok(token);
+        return new AuthResponse(token, request.getUsername());
     }
 }

@@ -36,8 +36,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
+        
+        String requestPath = request.getServletPath();
+        
+        // Permitir acceso público a endpoints de autenticación y YouTube
+        if (requestPath.startsWith("/api/auth/") || requestPath.startsWith("/api/youtube/")) {
+            chain.doFilter(request, response);
+            return;
+        }
+        
         // Verificar si es una solicitud de login
-        if (request.getServletPath().equals("/api/auth/login")) {
+        if (requestPath.equals("/api/auth/login")) {
             try {
                 AuthRequest authRequest = new ObjectMapper().readValue(request.getInputStream(), AuthRequest.class);
                 Authentication authentication = authenticationManager.authenticate(
@@ -56,20 +65,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Validar token JWT para otras solicitudes
             String header = request.getHeader("Authorization");
             if (header != null && header.startsWith("Bearer ")) {
-                String token = header.substring(7);
-                String username = jwtUtil.extractUsername(token);
-                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                    if (jwtUtil.validateToken(token, userDetails)) {
-                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                                userDetails, null, userDetails.getAuthorities()
-                        );
-                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                try {
+                    String token = header.substring(7);
+                    String username = jwtUtil.extractUsername(token);
+                    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                        if (jwtUtil.validateToken(token, userDetails)) {
+                            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                    userDetails, null, userDetails.getAuthorities()
+                            );
+                            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                            SecurityContextHolder.getContext().setAuthentication(authToken);
+                        }
                     }
+                } catch (Exception e) {
+                    // Log the exception but don't block the request for public endpoints
+                    System.err.println("JWT validation error: " + e.getMessage());
                 }
             }
-            chain.doFilter(request, response); // Continuar con la cadena de filtros
+            chain.doFilter(request, response);
         }
     }
 }
