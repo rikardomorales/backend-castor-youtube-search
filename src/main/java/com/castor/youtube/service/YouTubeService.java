@@ -14,6 +14,13 @@ import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoListResponse;
 import com.google.api.services.youtube.model.Channel;
 import com.google.api.services.youtube.model.ChannelListResponse;
+import com.castor.youtube.repository.SearchHistoryRepository;
+import com.castor.youtube.repository.UserRepository;
+import com.castor.youtube.entity.SearchHistory;
+import com.castor.youtube.entity.User;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +38,14 @@ public class YouTubeService {
 
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
     private static final String APPLICATION_NAME = "backend-castor-youtube-search";
+
+    private final SearchHistoryRepository searchHistoryRepository;
+    private final UserRepository userRepository;
+
+    public YouTubeService(SearchHistoryRepository searchHistoryRepository, UserRepository userRepository) {
+        this.searchHistoryRepository = searchHistoryRepository;
+        this.userRepository = userRepository;
+    }
 
     public List<YouTubeSearchResult> searchVideos(String query, int maxResults) throws GeneralSecurityException, IOException {
         try {
@@ -112,5 +127,17 @@ public class YouTubeService {
         details.setSubscriberCount(channel.getStatistics().getSubscriberCount() != null ? channel.getStatistics().getSubscriberCount().longValue() : null);
         details.setChannelUrl("https://www.youtube.com/channel/" + channelId);
         return details;
+    }
+
+    public void saveSearchHistory(String query, String videoId) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String username = (principal instanceof UserDetails) ? ((UserDetails) principal).getUsername() : principal.toString();
+        User user = userRepository.findByUsername(username).orElseThrow();
+        SearchHistory history = new SearchHistory();
+        history.setUser(user);
+        history.setQuery(query);
+        history.setVideoId(videoId);
+        history.setSearchedAt(LocalDateTime.now());
+        searchHistoryRepository.save(history);
     }
 }

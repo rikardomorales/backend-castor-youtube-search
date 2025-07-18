@@ -13,7 +13,7 @@ Technical test project for Castor – A fullstack web application built with Spr
 
 ## Esquema de la Base de Datos
 
-La aplicación utiliza una base de datos MySQL con la siguiente entidad principal:
+La aplicación utiliza una base de datos MySQL con las siguientes entidades principales:
 
 ### Entidad `User`
 | Campo      | Tipo     | Restricciones                |
@@ -26,6 +26,17 @@ La aplicación utiliza una base de datos MySQL con la siguiente entidad principa
 
 - La tabla `user_roles` almacena los roles asociados a cada usuario.
 - El esquema se genera automáticamente con Hibernate (`spring.jpa.hibernate.ddl-auto=update`).
+
+### Entidad `SearchHistory`
+| Campo      | Tipo           | Restricciones                |
+|------------|----------------|------------------------------|
+| id         | Long           | PK, auto-increment           |
+| user_id    | Long (FK)      | No nulo, referencia a User   |
+| query      | String         | No nulo                      |
+| videoId    | String         | No nulo                      |
+| searchedAt | LocalDateTime  | No nulo, fecha de la búsqueda|
+
+- Permite almacenar el historial de búsquedas de YouTube por usuario.
 
 ---
 
@@ -96,6 +107,7 @@ spring.jpa.hibernate.ddl-auto=update
 - `GET /api/youtube/search` — Buscar videos (requiere JWT)
 - `GET /api/youtube/play/{videoId}` — Reproducir video (requiere JWT)
 - `GET /api/youtube/channel/{channelId}` — Detalles de canal (requiere JWT)
+- `GET /api/youtube/history` — Historial de búsquedas del usuario (requiere JWT)
 
 ---
 
