@@ -7,6 +7,13 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;
+import com.castor.youtube.dto.YouTubeSearchResult;
+import com.castor.youtube.dto.VideoPlaybackResponse;
+import com.castor.youtube.dto.ChannelDetailsResponse;
+import com.google.api.services.youtube.model.Video;
+import com.google.api.services.youtube.model.VideoListResponse;
+import com.google.api.services.youtube.model.Channel;
+import com.google.api.services.youtube.model.ChannelListResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -63,25 +70,47 @@ public class YouTubeService {
             throw new RuntimeException("Error al buscar videos en YouTube: " + e.getMessage(), e);
         }
     }
-}
 
-// Clase auxiliar YouTubeSearchResult
-class YouTubeSearchResult {
-    private String videoId;
-    private String title;
-    private String description;
-    private String thumbnailUrl;
-    private String channelTitle;
+    public VideoPlaybackResponse getVideoPlaybackInfo(String videoId) throws GeneralSecurityException, IOException {
+        final NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+        YouTube youtube = new YouTube.Builder(httpTransport, JSON_FACTORY, null)
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+        YouTube.Videos.List request = youtube.videos().list(Arrays.asList("snippet"));
+        request.setKey(apiKey);
+        request.setId(Arrays.asList(videoId));
+        VideoListResponse response = request.execute();
+        if (response.getItems().isEmpty()) {
+            throw new RuntimeException("Video not found");
+        }
+        Video video = response.getItems().get(0);
+        VideoPlaybackResponse playback = new VideoPlaybackResponse();
+        playback.setVideoId(videoId);
+        playback.setPlaybackUrl("https://www.youtube.com/watch?v=" + videoId);
+        playback.setTitle(video.getSnippet().getTitle());
+        playback.setDescription(video.getSnippet().getDescription());
+        return playback;
+    }
 
-    // Getters y Setters
-    public String getVideoId() { return videoId; }
-    public void setVideoId(String videoId) { this.videoId = videoId; }
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    public String getThumbnailUrl() { return thumbnailUrl; }
-    public void setThumbnailUrl(String thumbnailUrl) { this.thumbnailUrl = thumbnailUrl; }
-    public String getChannelTitle() { return channelTitle; }
-    public void setChannelTitle(String channelTitle) { this.channelTitle = channelTitle; }
+    public ChannelDetailsResponse getChannelDetails(String channelId) throws GeneralSecurityException, IOException {
+        final NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+        YouTube youtube = new YouTube.Builder(httpTransport, JSON_FACTORY, null)
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+        YouTube.Channels.List request = youtube.channels().list(Arrays.asList("snippet", "statistics"));
+        request.setKey(apiKey);
+        request.setId(Arrays.asList(channelId));
+        ChannelListResponse response = request.execute();
+        if (response.getItems().isEmpty()) {
+            throw new RuntimeException("Channel not found");
+        }
+        Channel channel = response.getItems().get(0);
+        ChannelDetailsResponse details = new ChannelDetailsResponse();
+        details.setChannelId(channelId);
+        details.setTitle(channel.getSnippet().getTitle());
+        details.setDescription(channel.getSnippet().getDescription());
+        details.setSubscriberCount(channel.getStatistics().getSubscriberCount() != null ? channel.getStatistics().getSubscriberCount().longValue() : null);
+        details.setChannelUrl("https://www.youtube.com/channel/" + channelId);
+        return details;
+    }
 }
