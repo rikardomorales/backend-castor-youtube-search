@@ -14,6 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.castor.youtube.util.JwtUtil;
 import com.castor.youtube.security.JwtAuthenticationFilter;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.config.Customizer;
 
 /**
  * Configuración de seguridad para la aplicación backend-castor-youtube-search.
@@ -42,6 +43,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
+                .cors(Customizer.withDefaults()) // Habilita CORS en la cadena de filtros
                 .csrf(csrf -> csrf.disable()) // Desactivado para APIs REST con JWT
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests

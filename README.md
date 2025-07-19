@@ -88,6 +88,40 @@ La autenticación se basa en JWT (JSON Web Token) y sigue el siguiente flujo:
 
 ---
 
+## Configuración CORS
+
+La aplicación incluye configuración CORS para permitir solicitudes desde el frontend Angular:
+
+- **Origen permitido:** `http://localhost:4200`
+- **Métodos permitidos:** GET, POST, PUT, DELETE, OPTIONS
+- **Headers permitidos:** Todos (`*`)
+- **Credentials:** Habilitado para autenticación JWT
+
+La configuración está implementada en:
+- `CorsConfig.java` - Configuración global de CORS
+- `SecurityConfig.java` - CORS habilitado en la cadena de filtros de Spring Security
+
+---
+
+## DTOs (Data Transfer Objects)
+
+### DTOs de Autenticación
+- `AuthRequest` - Para registro y login de usuarios
+- `AuthResponse` - Respuesta del login con JWT
+
+### DTOs de YouTube
+- `YouTubeSearchResult` - Resultados de búsqueda de videos
+- `VideoPlaybackResponse` - Información de reproducción de video
+- `ChannelDetailsResponse` - Detalles de canal de YouTube
+
+### DTOs de Historial
+- `SearchHistoryDto` - Historial de búsquedas (sin información sensible)
+- `PublicUserDto` - Información pública del usuario (sin password)
+
+Todos los DTOs utilizan Lombok para reducir código boilerplate.
+
+---
+
 ## Configuración de la Base de Datos (application.properties)
 
 ```
